@@ -105,7 +105,7 @@ The Apache Beam solution utilizes a robust data processing pipeline to transform
 #### Output Generation
 
 - **CSV Formatting**: The aggregated data, structured as `Aggregated` named tuples, is converted to CSV format lines using a custom function, `convert_to_csv_line`.
-- The aggregated and calculated results are saved into CSV files (`pandas_output_1.csv` for merged datasets, `pandas_output_2.csv` for total calculations) in the output directory.
+- The aggregated and calculated results are saved into CSV files (`apache_output_1.csv` for merged datasets, `apache_output_2.csv` for total calculations) in the output directory.
 
 Using `Precursor` and `Aggregated` not only makes the pipeline steps clear and ensures the correct data structure is passed along, but also makes the code self-describing. The data flow through the pipeline is easier to understand and maintain, and other developers can quickly grasp the structure of data being processed at each stage.
 
