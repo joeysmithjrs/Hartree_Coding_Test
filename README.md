@@ -52,15 +52,23 @@ The pandas-based solution consists of two main steps:
 - **Data Merging**: The two DataFrames are merged on the `counter_party` column to create a combined dataset.
 - **Column Renaming**: Columns are renamed for consistency with the expected output. For instance, `rating` becomes `max(rating by counterparty)` to indicate the subsequent aggregation operation.
 
-#### Data Aggregation and Calculation
+### Data Aggregation and Calculation
 
-- **Conditional Sums**: Conditional sums are computed for `ARAP` and `ACCR` statuses by applying functions across all rows.
-- **Aggregation**: The merged DataFrame is grouped by `legal_entity`, `counterparty`, and `tier`. Aggregations are then performed based on the predefined operations in `agg_dict`.
-- **Total Calculations**:
-  - **By Legal Entity**: Totals are calculated for each `legal_entity`.
-  - **By Legal Entity and Counterparty**: Totals are computed for each combination of `legal_entity` and `counterparty`.
-  - **By Counterparty**: Totals are determined for each `counterparty`.
-  - **By Tier**: Totals are found for each `tier`.
+- **Conditional Sums**: 
+  Conditional sums for `ARAP` and `ACCR` statuses are computed by applying functions across all DataFrame rows.
+
+- **Aggregation**: 
+  The merged DataFrame is grouped and aggregated according to the predefined operations in the global variable `agg_dict`.
+
+- **Total Calculations**: 
+  Totals are dynamically calculated through a series of groupings. The group configurations are outlined below:
+  - **By Legal Entity**: Groups are created by `legal_entity`, setting both `counterparty` and `tier` columns to 'Total'.
+  - **By Legal Entity and Counterparty**: Groups are created by `legal_entity` and `counterparty`, setting the `tier` column to 'Total'.
+  - **By Counterparty**: Groups are created by `counterparty`, setting both `legal_entity` and `tier` columns to 'Total'.
+  - **By Tier**: Groups are created by `tier`, setting both `legal_entity` and `counterparty` columns to 'Total'.
+
+- **Iteration and Combination**: 
+  The totals for each group configuration are calculated within a loop that iterates over `groupings`. The resulting DataFrames are then concatenated to form a single DataFrame that encompasses all aggregated totals.
 
 #### Output Generation
 

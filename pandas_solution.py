@@ -6,7 +6,13 @@ agg_dict = {
     'sum(value where status=ARAP)': 'sum',  # Define the operation for summing ARAP values
     'sum(value where status=ACCR)': 'sum'   # Define the operation for summing ACCR values
 }
-
+# Define a list of tuples with grouping columns and columns to set to 'Total'
+groupings = [
+    (['legal_entity'], ['counterparty', 'tier']),
+    (['legal_entity', 'counterparty'], ['tier']),
+    (['counterparty'], ['legal_entity', 'tier']),
+    (['tier'], ['legal_entity', 'counterparty']),
+]
 
 def merge_datasets():
     # Load the data from CSV files into DataFrames
@@ -35,41 +41,32 @@ def merge_datasets():
 
     return aggregated
 
-
 def calculate_totals(aggregated):
-    # Aggregate data to compute totals for each group level: legal_entity, legal_entity & counter_party, etc.
-    # Each total is computed separately and then combined into one DataFrame
 
-    # Calculate totals for each legal_entity
-    legal_entity_totals = aggregated.groupby('legal_entity').agg(agg_dict).reset_index()
-    legal_entity_totals['counterparty'] = 'Total'  
-    legal_entity_totals['tier'] = 'Total'  
+    all_totals = []
+    # Loop over each grouping
+    for grouping_columns, total_columns in groupings:
+        # Perform the aggregation
+        df_total = aggregated.groupby(grouping_columns).agg(agg_dict).reset_index()
 
-    # Calculate totals for each combination of legal_entity and counter_party
-    legal_entity_counter_party_totals = aggregated.groupby(['legal_entity', 'counterparty']).agg(agg_dict).reset_index()
-    legal_entity_counter_party_totals['tier'] = 'Total'  
+        # Set the specified columns to 'Total'
+        for col in total_columns:
+            df_total[col] = 'Total'
 
-    # Calculate totals for each counter_party
-    counter_party_totals = aggregated.groupby('counterparty').agg(agg_dict).reset_index()
-    counter_party_totals['legal_entity'] = 'Total' 
-    counter_party_totals['tier'] = 'Total'  
-
-    # Calculate totals for each tier
-    tier_totals = aggregated.groupby('tier').agg(agg_dict).reset_index()
-    tier_totals['legal_entity'] = 'Total'  
-    tier_totals['counterparty'] = 'Total'  
+        all_totals.append(df_total)
 
     # Combine all the calculated totals into a single DataFrame
-    combined_results = pd.concat(
-        [legal_entity_totals, legal_entity_counter_party_totals, counter_party_totals, tier_totals], ignore_index=True)
+    combined_results = pd.concat(all_totals, ignore_index=True)
 
     # Rearrange the columns to match the expected output format
-    final_results = combined_results[
-        ["legal_entity", "counterparty", "tier", "max(rating by counterparty)", "sum(value where status=ARAP)",
-         "sum(value where status=ACCR)"]]
+    expected_columns = [
+        "legal_entity", "counterparty", "tier",
+        "max(rating by counterparty)", "sum(value where status=ARAP)",
+        "sum(value where status=ACCR)"
+    ]
+    final_results = combined_results[expected_columns]
 
     return final_results
-
 
 if __name__ == '__main__':
     # Call the merge_datasets function and save to CSV
